@@ -20,15 +20,13 @@ public class Iprefer{
             case "-c":
                 if(args.length != 7) invalid();
                 if(validatePort(args[4]) && validateHost(args[2]) && validateTime(args[6])){
-                    // do client mode stuff :p
-                    System.out.println("Client Mode");
+                    Client c = new Client(args[2], Integer.parseInt(args[4]),Integer.parseInt(args[6]));
                 }
                 break;
             case "-s":
                 if(args.length != 3) invalid();
                 if(validatePort(args[2])){
-                    //do server stuff
-                    System.out.println("Server Mode");
+                    Server s = new Server(Integer.parseInt(args[2]));
                 }
                 break;
             default:
@@ -81,7 +79,7 @@ public class Iprefer{
      * Client Class
      * Represents a client 
      */
-    private class Client{
+    private static class Client{
         private int port;
         private String ip;
         private Client(String ip, int port, int time){
@@ -109,6 +107,48 @@ public class Iprefer{
             }
             double r = (sent * 8) / 1000.0 / time;
 			System.out.printf("sent=" + sent + " KB rate=%.3f Mbps\n", r);
+            
+        }
+    }
+
+    /*
+     * Server Class
+     * Represents a server 
+     */
+    private static class Server{
+        private int port;
+        private Server(int port){
+            this.port = port;
+            run();
+        }
+        private void run(){
+            ServerSocket ss;
+            Socket s;
+            String msg; 
+            long rec = 0;
+            long start = 0;
+            long end = 0;
+            try {
+                ss = new ServerSocket(port);
+                s = ss.accept();
+                BufferedReader b = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                start = System.currentTimeMillis();
+                for(;;){
+                    msg = b.readLine();
+                    if(msg == null) break;
+                    rec++;
+                }
+                end = System.currentTimeMillis();
+                s.close();
+                b.close();
+                ss.close();
+
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+				System.exit(1);
+            }
+            double r = (rec * 8) / (end - start);
+			System.out.printf("received=" + rec + " KB rate=%.3f Mbps\n", r);
             
         }
     }
